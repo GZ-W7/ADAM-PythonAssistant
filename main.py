@@ -62,15 +62,38 @@ def intro():
 
 #MAIN FUNCTIONS
 
+def close(window):
+    window.destroy()
 
 def help():
+    global helpWindow
     helpWindow = Toplevel()
+    helpWindow.title("Help")
+    helpWindow.config(background=data["bg"])
+    helpWindow.resizable(height=False, width=False)
+
+    text = ("""Available Commands:
+────────────────────────────\n
+time        - Displays the current system time and date.\n
+weather     - Shows local weather information.\n
+search      - Performs a web search using your default browser.\n
+editor      - Opens a basic built-in text editor.\n
+stocks      - Launches a stock market game using real stock data.\n
+notes       - Save and view personal notes.\n
+define      - Look up dictionary definitions for words.\n
+quote       - Display a random quote.""")
+
+    label = Label(helpWindow, text=text, font=("Consolas", 12), padx=10, pady=30, bg=data["bg"], fg="#eeeeee", justify="left")
+    label.grid(row=0,column=0)
+
+    btn = Button(helpWindow, text="ok", command=help)
+    
 
 def decide(event):
     choice = inputEntry.get().lower()
-
+    inputEntry.delete(0, END)
     if choice == "help":
-        pass
+        help()
     elif choice == "time":
         pass
     elif choice == "weather":
