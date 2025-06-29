@@ -14,4 +14,5 @@ def fetchData():
 
 def restartUser():
     with open("data.json", "w") as file:
-        json.dump(("{'name': '', 'existing user': False}"), file, indent = 2)
+        json.dump(({"name" :"","existing user": False, "bg": "#2e2e2e", "font": "Consolas"}), file, indent = 2)
+    pass

@@ -1,4 +1,6 @@
 {
   "name": "",
-  "existing user": false
+  "existing user": false,
+  "bg": "#2e2e2e",
+  "font": "Consolas"
 }
