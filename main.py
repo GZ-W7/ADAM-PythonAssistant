@@ -1,7 +1,10 @@
-import datetime, webbrowser, os, time
+import datetime, webbrowser, os, time, re
 from tkinter import *
 from tkinter import messagebox
 from dataHandling import saveData, fetchData, restartUser
+
+# Dear anyone who reads this,
+# Prepare some bleach for your eyes and I am sorry.
 
 #restartUser()
 
@@ -101,7 +104,6 @@ def argError(input):
 def manWarning(input):
     messagebox.showerror(title="Syntax Error", message=f"Argument given not valid: {input[1]}")
     
-
 def man(input):
 
     manWindow = Toplevel(root)
@@ -115,14 +117,33 @@ def man(input):
     btn = Button(manWindow, text="close", command=lambda: close(manWindow))
     btn.config(font=(data["font"], 12), bg="#eeeeee", fg="black")
     btn.pack()
-    
 
+def search(input):
+    domain_pattern = re.compile(r"^[\w.-]+\.(com|org|net|io|gov|edu)(/.*)?$")
+    #Checks if input begins with protocals
+    if input[1].startswith("http://") or input[1].startswith("https://"):
+        webbrowser.open(input[1])
+    
+    #checks if input has any popular top level domains
+    
+    elif bool(domain_pattern.match(input[1])):
+        webbrowser.open(input[1])
+    else:
+    
+        #recreates search terms and opens it in google
+        query = ""
+        for i in range(1, len(input)):
+            query += f" {input[i]}"
+
+        webbrowser.open(f"https://www.google.com/search?q={query}")
+    
 def decide(event):
     choice = inputEntry.get().lower().split(" ")
     inputEntry.delete(0, END)
 
     if choice[0] == "help":
         help()
+
     elif choice[0] == "man":
         if len(choice)==2:
             if choice[1] in data["man"]:
@@ -131,27 +152,36 @@ def decide(event):
                 manWarning(choice)
         else:
             argError(choice)
+            
     elif choice[0] == "time":
         pass
+
     elif choice[0] == "weather":
         pass
+
     elif choice[0] == "search":
-        pass
+        search(choice)
+
     elif choice[0] == "editor":
         pass
+
     elif choice[0] == "stocks":
         pass
+
     elif choice[0] == "notes":
         pass
+
     elif choice[0] == "define":
         pass
+
     elif choice[0] == "quote":
         pass
+
     elif choice[0] == "exit":
         close(root)
+
     else:
         messagebox.showerror(message="Requested command is invalid, please consult 'help' to see valid command.")
-
 
 def bootScreen():
     global root, inputEntry
@@ -169,7 +199,7 @@ def bootScreen():
     inputLabel = Label(root, text=">", bg=data["bg"], fg="#eeeeee",font=("Consolas", 12), justify="right")
     inputLabel.place(x=20,y=180)
 
-    inputEntry = Entry(root, justify="left", bg=data["bg"], fg="#eeeeee", font=("Consolas", 12), borderwidth=0)
+    inputEntry = Entry(root, justify="left", bg=data["bg"], fg="#eeeeee", font=("Consolas", 12), borderwidth=0, width=35)
     inputEntry.place(x=35,y=183)
     inputEntry.focus()
 
@@ -178,11 +208,9 @@ def bootScreen():
     root.mainloop()
 
 
-
 #------------------------------------------
 
 if data["existing user"] == False:
     intro()
 else:
     bootScreen()
-

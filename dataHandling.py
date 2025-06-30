@@ -23,7 +23,7 @@ def restartUser():
         "help": "Outputs all available commands - 'help'",
         "time": "Outputs current time and date - 'time [region]'\n(region can be left empty to output your time)",
         "weather": "Outputs current weather, high and low temperatures,\n [NEEDs TO BE FINISHED]",
-        "search": "Opens default webbrowser with input keywords - 'search [keywords]'",
+        "search": "Opens default webbrowser with input keywords or url - 'search [keywords/url]'",
         "editor": "Opens a built in basic text editor - 'editor [filepath]'\n(filepath can be left empty to create a new file in documents.\nIf no file is given, it will create a new one)",
         "stocks": "Opens a built-in stock game based on real stock data - 'stocks'",
         "notes": "Opens a built in notes app - 'notes'",
