@@ -1,4 +1,4 @@
-import datetime, webbrowser, os
+import datetime, webbrowser, os, time
 from tkinter import *
 from tkinter import messagebox
 from dataHandling import saveData, fetchData, restartUser
@@ -6,6 +6,7 @@ from dataHandling import saveData, fetchData, restartUser
 #restartUser()
 
 #Loads all saved data from previous sessions
+global data
 data = fetchData()
 
 #------------------------------------------
@@ -25,7 +26,7 @@ def confirmName(event):
 
     value = entry.get()
     # Initiates a pop up asking to confirm if you are "NAME"
-    if messagebox.askyesno(title="Confirm your identity", message=f"Are you {value}?"):
+    if messagebox.askyesno(title="Confirm identity", message=f"Are you {value}?"):
         data["name"] = value
         data["existing user"] = True
         saveData(data)
@@ -74,6 +75,7 @@ def help():
 
     text = ("""Available Commands:
 ────────────────────────────\n
+man         - brings up the manual on any command (man [command])\n
 time        - Displays the current system time and date.\n
 weather     - Shows local weather information.\n
 search      - Performs a web search using your default browser.\n
@@ -81,27 +83,74 @@ editor      - Opens a basic built-in text editor.\n
 stocks      - Launches a stock market game using real stock data.\n
 notes       - Save and view personal notes.\n
 define      - Look up dictionary definitions for words.\n
-quote       - Display a random quote.""")
+quote       - Display a random quote.\n
+exit        - exits A.D.A.M\n""")
 
     label = Label(helpWindow, text=text, font=("Consolas", 12), padx=10, pady=30, bg=data["bg"], fg="#eeeeee", justify="left")
     label.grid(row=0,column=0)
 
-    btn = Button(helpWindow, text="ok", command=help)
+    
+
+    btn = Button(helpWindow, text="close", command=lambda: close(helpWindow))
+    btn.config(font=(data["font"], 12), bg="#eeeeee", fg="black")
+    btn.place(relx=0.46,rely=0.9)
+
+def argError(input):
+    messagebox.showerror(title="Syntax Error", message=f"{input[0]}: expected 1 argument, got {len(input)-1}.")
+
+def manWarning(input):
+    messagebox.showerror(title="Syntax Error", message=f"Argument given not valid: {input[1]}")
+    
+
+def man(input):
+
+    manWindow = Toplevel(root)
+    manWindow.title(f"Manual: {input[1]}")
+    manWindow.config(background=data["bg"])
+    manWindow.resizable(False, False)
+
+    info = Label(manWindow,text=data["man"][input[1]],bg=data["bg"], fg="#eeeeee",font=("Consolas", 12), justify="left", wraplength=300, padx=20, pady=20)
+    info.pack()
+
+    btn = Button(manWindow, text="close", command=lambda: close(manWindow))
+    btn.config(font=(data["font"], 12), bg="#eeeeee", fg="black")
+    btn.pack()
     
 
 def decide(event):
-    choice = inputEntry.get().lower()
+    choice = inputEntry.get().lower().split(" ")
     inputEntry.delete(0, END)
-    if choice == "help":
+
+    if choice[0] == "help":
         help()
-    elif choice == "time":
+    elif choice[0] == "man":
+        if len(choice)==2:
+            if choice[1] in data["man"]:
+                man(choice)
+            else:
+                manWarning(choice)
+        else:
+            argError(choice)
+    elif choice[0] == "time":
         pass
-    elif choice == "weather":
+    elif choice[0] == "weather":
         pass
-    elif choice == "search":
+    elif choice[0] == "search":
         pass
+    elif choice[0] == "editor":
+        pass
+    elif choice[0] == "stocks":
+        pass
+    elif choice[0] == "notes":
+        pass
+    elif choice[0] == "define":
+        pass
+    elif choice[0] == "quote":
+        pass
+    elif choice[0] == "exit":
+        close(root)
     else:
-        messagebox.showerror(message="Requested operation is invalid, please consult 'help' to see valid operations.")
+        messagebox.showerror(message="Requested command is invalid, please consult 'help' to see valid command.")
 
 
 def bootScreen():
@@ -122,6 +171,7 @@ def bootScreen():
 
     inputEntry = Entry(root, justify="left", bg=data["bg"], fg="#eeeeee", font=("Consolas", 12), borderwidth=0)
     inputEntry.place(x=35,y=183)
+    inputEntry.focus()
 
     inputEntry.bind("<Return>", decide)
 
