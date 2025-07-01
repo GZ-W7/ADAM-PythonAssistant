@@ -1,16 +1,26 @@
 import datetime, webbrowser, os, time, re
 from tkinter import *
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 from dataHandling import saveData, fetchData, restartUser
+import ctypes
+
 
 # Dear anyone who reads this,
 # Prepare some bleach for your eyes and I am sorry.
 
-#restartUser()
+# Checks if data file exists, if not makes folder and file
+if not os.path.exists("data\\data.json"):
+    os.makedirs("data", exist_ok=True)
+    restartUser()
 
 #Loads all saved data from previous sessions
 global data
 data = fetchData()
+
+#Set app id and change taskbar icon
+myAppId = "adam.assistant.py"
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myAppId)
+
 
 #------------------------------------------
 #FUNCTIONS
@@ -46,6 +56,8 @@ def intro():
     newUser.resizable(height=False, width=False)
     newUser.config(background=data["bg"])
 
+    icon = PhotoImage(file="icon.png")
+    newUser.iconphoto(True, icon)
 
     introText = Label(newUser, text="----------------------------------------\nA.D.A.M. — A Dumb Assistant Mainly\nVersion 0.1\n----------------------------------------\n\nStatus: Active\nMode: Standby\nModules Loaded: Base Functions\n\nEnter 'help' to list available commands.\n\nUser identification required.\nEnter name:"
                     , font=("Consolas", 12),wraplength=400, padx=10, pady=30, bg=data["bg"], fg="#eeeeee", justify="left")
@@ -137,6 +149,74 @@ def search(input):
 
         webbrowser.open(f"https://www.google.com/search?q={query}")
     
+def saveFile(filepath):
+    targetPath  = filepath
+    if targetPath == False:
+        targetPath = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text Files", ".txt"),("Python Files", "*.py"), ("All Files", "*.*")])
+    elif targetPath:
+        with open(targetPath, "w", encoding="utf-8") as file:
+            file.write(textArea.get(1.0, END))
+        messagebox.showinfo(title="Saved File", message=f"File saved to {targetPath}")
+
+def editor(input):
+    print(input)
+
+    # checks if file was given
+    try:
+        filepath = input[1]
+    except TypeError:
+        pass
+
+    print(filepath)
+
+    #defines window and style
+    editWindow = Toplevel()
+    editWindow.geometry("800x600")
+    editWindow.config(bg=data["bg"])
+    editWindow.resizable(True, True)
+
+    #defines menu bar and styles
+    menubar = Menu(editWindow)
+    editWindow.config(menu=menubar)
+
+    fileMenu = Menu(menubar, tearoff=0)
+    menubar.add_cascade(label="File", menu=fileMenu)
+    fileMenu.add_command(label="Save", command=lambda: saveFile(filepath))
+    fileMenu.add_command(label="Exit", command=lambda: close(editWindow))
+
+    #defines text widget and style
+    global textArea
+    textArea = Text(editWindow, wrap=WORD, undo=True, font=(data["font"], 12), fg="#eeeeee", bg=data["bg"])
+    textArea.pack(fill=BOTH, expand=True)
+    textArea.focus()
+
+    # tries to find file
+    if filepath:
+        if os.path.exists(filepath):
+            with open(filepath, "r", encoding="utf-8") as file:
+                textArea.insert(1.0, file.read())
+            editWindow.title(f"A.D.A.M File Editor: {os.path.basename(filepath)}")
+        else:
+            editWindow.title(f"A.D.A.M File Editor: New File {filepath}")
+    else:
+        editWindow.title("A.D.A.M File Editor: New File")
+
+def currentTime():
+    now = datetime.datetime.now()
+    formatted_time = now.strftime("%A, %B %d, %Y\n%I:%M:%S %p")
+
+    timeWindow = Toplevel(root)
+    timeWindow.title("System Time")
+    timeWindow.config(background=data["bg"])
+    timeWindow.resizable(False, False)
+
+    label = Label(timeWindow, text=formatted_time, font=("Consolas", 14), bg=data["bg"], fg="#eeeeee", padx=20, pady=30, justify="center")
+    label.pack()
+
+    btn = Button(timeWindow, text="close", command=lambda: close(timeWindow))
+    btn.config(font=(data["font"], 12), bg="#eeeeee", fg="black")
+    btn.pack(pady=(0, 20))
+
 def decide(event):
     choice = inputEntry.get().lower().split(" ")
     inputEntry.delete(0, END)
@@ -154,7 +234,7 @@ def decide(event):
             argError(choice)
             
     elif choice[0] == "time":
-        pass
+        currentTime()
 
     elif choice[0] == "weather":
         pass
@@ -163,13 +243,7 @@ def decide(event):
         search(choice)
 
     elif choice[0] == "editor":
-        pass
-
-    elif choice[0] == "stocks":
-        pass
-
-    elif choice[0] == "notes":
-        pass
+        editor(choice)
 
     elif choice[0] == "define":
         pass
@@ -191,6 +265,10 @@ def bootScreen():
     root.resizable(height=False,width=False)
     root.title("A.D.A.M")
     root.geometry("384x235")
+
+    # Create and set icon for root and all top level windows
+    icon = PhotoImage(file="icon.png")
+    root.iconphoto(True, icon)
 
     bootText = Label(root, text=f"----------------------------------------\nWelcome, {data["name"]}.\n\nSystem status: Online\nCommand interface ready.\n\nType 'help' to view available commands.\n\n")
     bootText.config(font=("Consolas", 12),wraplength=400, padx=10, pady=30, bg=data["bg"], fg="#eeeeee", justify="left")
