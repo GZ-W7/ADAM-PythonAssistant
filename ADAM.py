@@ -8,9 +8,13 @@ import ctypes
 # Dear anyone who reads this,
 # Prepare some bleach for your eyes and I am sorry.
 
+directory = os.getenv("APPDATA")  # e.g. C:\Users\<username>\AppData\Roaming
+data_folder = os.path.join(directory, "data")
+data_file = os.path.join(data_folder, "data.json")
+
 # Checks if data file exists, if not makes folder and file
-if not os.path.exists("data\\data.json"):
-    os.makedirs("data", exist_ok=True)
+if not os.path.exists(data_file):
+    os.makedirs(data_folder, exist_ok=True)  # Create inside %APPDATA%\data
     restartUser()
 
 #Loads all saved data from previous sessions
@@ -25,11 +29,9 @@ ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myAppId)
 #------------------------------------------
 #FUNCTIONS
 
-# Used to clear the window/screen of widgets
-#def clearWindow():
-#    for i in root.winfo_children():
-#        i.destroy()
-
+def get_appdata_path(filename):
+    appdata_dir = os.path.join(os.getenv("APPDATA"), "ADAM")
+    return os.path.join(appdata_dir, filename)
 
 #INTRODUCTION FUNCTIONS
 
@@ -57,8 +59,8 @@ def intro():
     newUser.config(background=data["bg"])
 
     #Adds icon to window and any top level
-    icon = PhotoImage(file="icon.png")
-    newUser.iconphoto(True, icon)
+    icon_path = get_appdata_path("icon.ico")
+    newUser.iconbitmap(True, icon_path)
 
     # The text and styled
     introText = Label(newUser, text="----------------------------------------\nA.D.A.M. — A Dumb Assistant Mainly\nVersion 0.1\n----------------------------------------\n\nStatus: Active\nMode: Standby\nModules Loaded: Base Functions\n\nEnter 'help' to list available commands.\n\nUser identification required.\nEnter name:"
@@ -348,8 +350,9 @@ def bootScreen():
     root.geometry("384x235")
 
     # Create and set icon for root and all top level windows
-    icon = PhotoImage(file="icon.png")
-    root.iconphoto(True, icon)
+    icon_path = get_appdata_path("icon.ico")
+    root.iconbitmap(icon_path)
+
 
     bootText = Label(root, text=f"----------------------------------------\nWelcome, {data["name"]}.\n\nSystem status: Online\nCommand interface ready.\n\nType 'help' to view available commands.\n\n")
     bootText.config(font=("Consolas", 12),wraplength=400, padx=10, pady=30, bg=data["bg"], fg="#eeeeee", justify="left")
