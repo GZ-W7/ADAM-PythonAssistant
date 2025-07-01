@@ -56,9 +56,11 @@ def intro():
     newUser.resizable(height=False, width=False)
     newUser.config(background=data["bg"])
 
+    #Adds icon to window and any top level
     icon = PhotoImage(file="icon.png")
     newUser.iconphoto(True, icon)
 
+    # The text and styled
     introText = Label(newUser, text="----------------------------------------\nA.D.A.M. — A Dumb Assistant Mainly\nVersion 0.1\n----------------------------------------\n\nStatus: Active\nMode: Standby\nModules Loaded: Base Functions\n\nEnter 'help' to list available commands.\n\nUser identification required.\nEnter name:"
                     , font=("Consolas", 12),wraplength=400, padx=10, pady=30, bg=data["bg"], fg="#eeeeee", justify="left")
     introText.grid(row=1,column=1)
@@ -66,6 +68,7 @@ def intro():
     inputLabel = Label(newUser, text=">", bg=data["bg"], fg="#eeeeee",font=("Consolas", 12), justify="right")
     inputLabel.place(x=20,y=300)
 
+    # Username input field
     entry = Entry(justify="left", bg=data["bg"], fg="#eeeeee", font=("Consolas", 12), borderwidth=0)
     entry.place(x=35,y=303)
 
@@ -73,15 +76,18 @@ def intro():
     newUser.bind("<Return>", confirmName)
 
     newUser.mainloop()
+    #Starts the normal screen once finished
     bootScreen()
 
 
 #MAIN FUNCTIONS
 
 
+# Reusable function to close window
 def close(window):
     window.destroy()
 
+# Function to show all commands
 def help():
     global helpWindow
     helpWindow = Toplevel()
@@ -102,18 +108,23 @@ exit        - exits A.D.A.M\n""")
     label = Label(helpWindow, text=text, font=("Consolas", 12), padx=10, pady=30, bg=data["bg"], fg="#eeeeee", justify="left")
     label.grid(row=0,column=0)
 
-    
-
     btn = Button(helpWindow, text="close", command=lambda: close(helpWindow))
     btn.config(font=(data["font"], 12), bg="#eeeeee", fg="black")
     btn.place(relx=0.46,rely=0.9)
 
+# Function to show error message relating to number of arguments
 def argError(input):
-    messagebox.showerror(title="Syntax Error", message=f"{input[0]}: expected 1 argument, got {len(input)-1}.")
+    if input[0] in ("quote", "time"):
+        x = 0
+    else:
+        x = 1
+    messagebox.showerror(title="Syntax Error", message=f"{input[0]}: expected {x} argument, got {len(input)-1}.")
 
+# Function to show error when man is passed an invalid argument
 def manWarning(input):
     messagebox.showerror(title="Syntax Error", message=f"Argument given not valid: {input[1]}")
-    
+
+#Function to show the usage of any command  
 def man(input):
 
     manWindow = Toplevel(root)
@@ -128,6 +139,7 @@ def man(input):
     btn.config(font=(data["font"], 12), bg="#eeeeee", fg="black")
     btn.pack()
 
+#Function to search or open any given argument on a web browser
 def search(input):
     domain_pattern = re.compile(r"^[\w.-]+\.(com|org|net|io|gov|edu)(/.*)?$")
     #Checks if input begins with protocals
@@ -147,6 +159,7 @@ def search(input):
 
         webbrowser.open(f"https://www.google.com/search?q={query}")
     
+# Function used to save changes in editor
 def saveFile(filepath):
     targetPath  = filepath
     if targetPath == False:
@@ -156,6 +169,7 @@ def saveFile(filepath):
             file.write(textArea.get(1.0, END))
         messagebox.showinfo(title="Saved File", message=f"File saved to {targetPath}")
 
+# Basic editor 
 def editor(input):
     # checks if file was given
     try:
@@ -164,7 +178,7 @@ def editor(input):
         filepath = False
 
     #defines window and style
-    editWindow = Toplevel()
+    editWindow = Toplevel(root)
     editWindow.geometry("800x600")
     editWindow.config(bg=data["bg"])
     editWindow.resizable(True, True)
@@ -195,6 +209,7 @@ def editor(input):
     else:
         editWindow.title("A.D.A.M File Editor: New File")
 
+#Show current time and date
 def currentTime():
     now = datetime.datetime.now()
     formatted_time = now.strftime("%A, %B %d, %Y\n%I:%M:%S %p")
@@ -211,21 +226,72 @@ def currentTime():
     btn.config(font=(data["font"], 12), bg="#eeeeee", fg="black")
     btn.pack(pady=(0, 20))
 
-def define(input):
-    pass
-
-def getDef(input):
-    url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{input[1]}"
+# Request word definition and return it, used in define
+def getDef(word):
+    url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
     response = requests.get(url)
-    if response.status_code == 200:
-        definitions = []
-        for i in data[0]["meanings"]:
-            for definition in i ["definitions"]:
-                definitions.append(definition["definition"])
-            return definitions
-        else:
-            return None
 
+    if response.status_code == 200:
+        data = response.json()
+
+        definitions = []
+
+        try:
+            for i in data[0]["meanings"]:
+                for definition in i ["definitions"]:
+                    definitions.append(definition["definition"])
+                return definitions
+        except KeyError:
+            return None
+    else:
+        return None
+
+# Output definition of word
+def define(input):
+    definitions = getDef(input[1])
+
+    defWindow = Toplevel()
+    defWindow.config(bg=data["bg"])
+    defWindow.title(f"Definition: {input[1]}")
+    defWindow.geometry("450x300")  # optional size
+
+    scrollBar = Scrollbar(defWindow)
+    scrollBar.pack(side=RIGHT, fill=Y)
+
+    textArea = Text(defWindow, wrap="word", bg=data["bg"], fg="#eeeeee", font=("Consolas", 12), padx=10, pady=10, yscrollcommand=scrollBar.set)
+    textArea.pack(side=LEFT, fill=BOTH, expand=True)
+
+    scrollBar.config(command=textArea.yview)
+
+    if definitions is None:
+        textArea.insert(END, "No definition found")
+    else:
+        text = "\n\n".join(definitions)
+        textArea.insert(END, text)
+
+    textArea.config(state="disabled")
+
+# Used to create window and display quotes
+def show_quote(quote_text, author):
+    quoteWindow = Toplevel()
+    quoteWindow.config(bg=data["bg"])
+    quoteWindow.title("Random Quote")
+
+    text = f'"{quote_text}"\n\n— {author}'
+
+    label = Label(quoteWindow, text=text, bg=data["bg"], fg="#eeeeee", font=("Consolas", 14), wraplength=400, justify="center", padx=20, pady=20)
+    label.pack(expand=True, fill="both")
+
+# Fetch random quote and show it
+def quote():
+    response = requests.get("https://api.quotable.io/random", verify=False)
+    if response.status_code == 200:
+        data = response.json()
+        show_quote(data["content"], data["author"])
+    else:
+        show_quote("Failed to retrieve quote", "")
+
+# Get user input from root and then run the command
 def decide(event):
     choice = inputEntry.get().lower().split(" ")
     inputEntry.delete(0, END)
@@ -243,7 +309,10 @@ def decide(event):
             argError(choice)
             
     elif choice[0] == "time":
-        currentTime()
+        if len(choice) != 1:
+            argError(choice)
+        else:
+            currentTime()
 
     elif choice[0] == "search":
         search(choice)
@@ -255,10 +324,13 @@ def decide(event):
         if len(choice) != 2:
             argError(choice)
         else:
-            getDef(choice)
+            define(choice)
 
     elif choice[0] == "quote":
-        pass
+        if len(choice) != 1:
+            argError(choice)
+        else:
+            quote()
 
     elif choice[0] == "exit":
         close(root)

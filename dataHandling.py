@@ -19,8 +19,7 @@ def restartUser():
     "man": {
         "man": "Outputs manual on any given command - 'man [command]'",
         "help": "Outputs all available commands - 'help'",
-        "time": "Outputs current time and date - 'time'\n",
-        "weather": "Outputs current weather, high and low temperatures,\n [NEEDs TO BE FINISHED]",
+        "time": "Outputs current time and date - 'time'",
         "search": "Opens default webbrowser with input keywords or url - 'search [keywords/url]'",
         "editor": "Opens a built in basic text editor - 'editor [filepath]'\n(filepath can be left empty to create a new file in documents.\nIf no file is given, it will create a new one)",
         "define": "Outputs definition of given word - 'define [word]'",
