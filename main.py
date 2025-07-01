@@ -1,4 +1,4 @@
-import datetime, webbrowser, os, time, re
+import datetime, webbrowser, os, re, requests
 from tkinter import *
 from tkinter import messagebox, filedialog
 from dataHandling import saveData, fetchData, restartUser
@@ -78,6 +78,7 @@ def intro():
 
 #MAIN FUNCTIONS
 
+
 def close(window):
     window.destroy()
 
@@ -92,11 +93,8 @@ def help():
 ────────────────────────────\n
 man         - brings up the manual on any command (man [command])\n
 time        - Displays the current system time and date.\n
-weather     - Shows local weather information.\n
 search      - Performs a web search using your default browser.\n
 editor      - Opens a basic built-in text editor.\n
-stocks      - Launches a stock market game using real stock data.\n
-notes       - Save and view personal notes.\n
 define      - Look up dictionary definitions for words.\n
 quote       - Display a random quote.\n
 exit        - exits A.D.A.M\n""")
@@ -159,15 +157,11 @@ def saveFile(filepath):
         messagebox.showinfo(title="Saved File", message=f"File saved to {targetPath}")
 
 def editor(input):
-    print(input)
-
     # checks if file was given
     try:
         filepath = input[1]
-    except TypeError:
-        pass
-
-    print(filepath)
+    except IndexError:
+        filepath = False
 
     #defines window and style
     editWindow = Toplevel()
@@ -186,7 +180,7 @@ def editor(input):
 
     #defines text widget and style
     global textArea
-    textArea = Text(editWindow, wrap=WORD, undo=True, font=(data["font"], 12), fg="#eeeeee", bg=data["bg"])
+    textArea = Text(editWindow, wrap=WORD, undo=True, font=(data["font"], 12), fg="#eeeeee", bg=data["bg"], padx=10, pady=10)
     textArea.pack(fill=BOTH, expand=True)
     textArea.focus()
 
@@ -217,6 +211,21 @@ def currentTime():
     btn.config(font=(data["font"], 12), bg="#eeeeee", fg="black")
     btn.pack(pady=(0, 20))
 
+def define(input):
+    pass
+
+def getDef(input):
+    url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{input[1]}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        definitions = []
+        for i in data[0]["meanings"]:
+            for definition in i ["definitions"]:
+                definitions.append(definition["definition"])
+            return definitions
+        else:
+            return None
+
 def decide(event):
     choice = inputEntry.get().lower().split(" ")
     inputEntry.delete(0, END)
@@ -236,9 +245,6 @@ def decide(event):
     elif choice[0] == "time":
         currentTime()
 
-    elif choice[0] == "weather":
-        pass
-
     elif choice[0] == "search":
         search(choice)
 
@@ -246,7 +252,10 @@ def decide(event):
         editor(choice)
 
     elif choice[0] == "define":
-        pass
+        if len(choice) != 2:
+            argError(choice)
+        else:
+            getDef(choice)
 
     elif choice[0] == "quote":
         pass
