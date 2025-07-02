@@ -9,8 +9,9 @@ import ctypes
 # Prepare some bleach for your eyes and I am sorry.
 
 directory = os.getenv("APPDATA")  # e.g. C:\Users\<username>\AppData\Roaming
-data_folder = os.path.join(directory, "data")
+data_folder = os.path.join(directory, "ADAM")
 data_file = os.path.join(data_folder, "data.json")
+print(data_file)
 
 # Checks if data file exists, if not makes folder and file
 if not os.path.exists(data_file):
@@ -32,13 +33,14 @@ ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myAppId)
 def get_appdata_path(filename):
     appdata_dir = os.path.join(os.getenv("APPDATA"), "ADAM")
     return os.path.join(appdata_dir, filename)
+    
 
 #INTRODUCTION FUNCTIONS
 
 
 #Used to confirm your name at the first instance of this being used
 def confirmName(event):
-
+    
     value = entry.get()
     # Initiates a pop up asking to confirm if you are "NAME"
     if messagebox.askyesno(title="Confirm identity", message=f"Are you {value}?"):
@@ -79,7 +81,8 @@ def intro():
 
     newUser.mainloop()
     #Starts the normal screen once finished
-    bootScreen()
+    if data["existing user"] == True:
+        bootScreen()
 
 
 #MAIN FUNCTIONS
